@@ -1,39 +1,28 @@
 using Microsoft.EntityFrameworkCore;
 using OnlineBookstore.CatalogService.Data;
-using OnlineBookstore.CatalogService.Models;
 
 namespace OnlineBookstore.CatalogService.Services
 {
-    public class StockService
+    public sealed class StockService(
+        CatalogDbContext dbContext,
+        BookCacheService cacheService,
+        ILogger<StockService> logger)
     {
-        private readonly CatalogDbContext _dbContext;
-        private readonly BookCacheService _cacheService;
-        private readonly ILogger<StockService> _logger;
-        
+
         // In-memory reservation tracking (could be replaced with Redis in production)
         private static readonly Dictionary<Guid, List<(Guid OrderId, int Quantity)>> _stockReservations = [];
         private static readonly SemaphoreSlim _semaphore = new(1, 1);
 
-        public StockService(
-            CatalogDbContext dbContext,
-            BookCacheService cacheService,
-            ILogger<StockService> logger)
-        {
-            _dbContext = dbContext;
-            _cacheService = cacheService;
-            _logger = logger;
-        }
-
         public async Task<BookStockInfo?> GetBookStockInfoAsync(Guid bookId)
         {
-            var book = await _dbContext.Books
+            var book = await dbContext.Books
                 .Where(b => b.Id == bookId)
                 .Select(b => new BookStockInfo(b.Id, b.Title, b.Stock))
                 .FirstOrDefaultAsync();
 
             if (book == null)
             {
-                _logger.LogWarning("Book with ID {BookId} not found when checking stock", bookId);
+                logger.LogWarning("Book with ID {BookId} not found when checking stock", bookId);
                 return null;
             }
 
@@ -44,22 +33,20 @@ namespace OnlineBookstore.CatalogService.Services
         {
             try
             {
-                var book = await _dbContext.Books.FindAsync(bookId);
+                var book = await dbContext.Books.FindAsync(bookId);
                 
                 if (book == null)
                 {
-                    _logger.LogWarning("Book with ID {BookId} not found when validating stock", bookId);
+                    logger.LogWarning("Book with ID {BookId} not found when validating stock", bookId);
                     return new StockValidationResult(false, 0);
                 }
 
-                // Get reserved quantity for this book
                 var reservedQuantity = GetReservedQuantity(bookId);
                 
-                // Check if we have enough available stock
                 var availableStock = book.Stock - reservedQuantity;
                 var isAvailable = availableStock >= requestedQuantity;
 
-                _logger.LogInformation(
+                logger.LogInformation(
                     "Stock validation for book {BookId}: Requested: {RequestedQuantity}, Total Stock: {TotalStock}, Reserved: {ReservedQuantity}, Available: {AvailableStock}, Result: {IsAvailable}",
                     bookId, requestedQuantity, book.Stock, reservedQuantity, availableStock, isAvailable);
                 
@@ -67,59 +54,53 @@ namespace OnlineBookstore.CatalogService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error validating stock for book {BookId}", bookId);
+                logger.LogError(ex, "Error validating stock for book {BookId}", bookId);
                 throw;
             }
         }
 
         public async Task<StockReservationResult> ReserveStockAsync(Guid bookId, int quantity, Guid orderId)
         {
+            await _semaphore.WaitAsync();
+
             try
             {
-                // First validate if stock is available
                 var validation = await ValidateStockAsync(bookId, quantity);
                 if (!validation.IsAvailable)
                 {
                     return new StockReservationResult(false, $"Insufficient stock. Available: {validation.AvailableStock}, Requested: {quantity}");
                 }
 
-                await _semaphore.WaitAsync();
-                try
+                if (!_stockReservations.TryGetValue(bookId, out var reservations))
                 {
-                    // Add reservation
-                    if (!_stockReservations.TryGetValue(bookId, out var reservations))
-                    {
-                        reservations = new List<(Guid OrderId, int Quantity)>();
-                        _stockReservations[bookId] = reservations;
-                    }
+                    reservations = [];
+                    _stockReservations[bookId] = reservations;
+                }
 
-                    // Check if this order already has a reservation for this book
-                    var existingReservation = reservations.FindIndex(r => r.OrderId == orderId);
-                    if (existingReservation >= 0)
-                    {
-                        // Update existing reservation
-                        reservations[existingReservation] = (orderId, quantity);
-                    }
-                    else
-                    {
-                        // Add new reservation
-                        reservations.Add((orderId, quantity));
-                    }
-                    
-                    _logger.LogInformation("Reserved {Quantity} units of book {BookId} for order {OrderId}", 
-                        quantity, bookId, orderId);
-                        
-                    return new StockReservationResult(true, "Stock reserved successfully");
-                }
-                finally
+                var existingReservation = reservations.FindIndex(r => r.OrderId == orderId);
+                if (existingReservation >= 0)
                 {
-                    _semaphore.Release();
+                    reservations[existingReservation] = (orderId, quantity);
                 }
+                else
+                {
+                    reservations.Add((orderId, quantity));
+                }
+
+                logger.LogInformation("Reserved {Quantity} units of book {BookId} for order {OrderId}",
+                    quantity, bookId, orderId);
+
+                return new StockReservationResult(true, "Stock reserved successfully");
+               
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reserving stock for book {BookId} for order {OrderId}", bookId, orderId);
+                logger.LogError(ex, "Error reserving stock for book {BookId} for order {OrderId}", bookId, orderId);
                 return new StockReservationResult(false, $"Error: {ex.Message}");
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
@@ -134,7 +115,7 @@ namespace OnlineBookstore.CatalogService.Services
                     if (!_stockReservations.TryGetValue(bookId, out var reservations) || 
                         !reservations.Any(r => r.OrderId == orderId))
                     {
-                        _logger.LogWarning("No reservation found for book {BookId} for order {OrderId}", bookId, orderId);
+                        logger.LogWarning("No reservation found for book {BookId} for order {OrderId}", bookId, orderId);
                         return false;
                     }
 
@@ -146,26 +127,26 @@ namespace OnlineBookstore.CatalogService.Services
                     }
 
                     // Update actual stock in database
-                    var book = await _dbContext.Books.FindAsync(bookId);
+                    var book = await dbContext.Books.FindAsync(bookId);
                     if (book == null)
                     {
-                        _logger.LogWarning("Book with ID {BookId} not found when committing reservation", bookId);
+                        logger.LogWarning("Book with ID {BookId} not found when committing reservation", bookId);
                         return false;
                     }
 
                     if (book.Stock < quantity)
                     {
-                        _logger.LogError("Critical error: Book {BookId} has less stock than the reserved quantity", bookId);
+                        logger.LogError("Book {BookId} has less stock than the reserved quantity", bookId);
                         return false;
                     }
 
                     book.Stock -= quantity;
-                    await _dbContext.SaveChangesAsync();
+                    await dbContext.SaveChangesAsync();
                     
                     // Update cache
-                    await _cacheService.RemoveBookFromCacheAsync(bookId);
+                    await cacheService.RemoveBookFromCacheAsync(bookId);
                     
-                    _logger.LogInformation("Committed reservation and reduced stock for book {BookId} by {Quantity} units", 
+                    logger.LogInformation("Committed reservation and reduced stock for book {BookId} by {Quantity} units", 
                         bookId, quantity);
                         
                     return true;
@@ -177,7 +158,7 @@ namespace OnlineBookstore.CatalogService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error committing reservation for book {BookId} for order {OrderId}", bookId, orderId);
+                logger.LogError(ex, "Error committing reservation for book {BookId} for order {OrderId}", bookId, orderId);
                 throw;
             }
         }
@@ -192,14 +173,14 @@ namespace OnlineBookstore.CatalogService.Services
                     // Check if the reservation exists
                     if (!_stockReservations.TryGetValue(bookId, out var reservations))
                     {
-                        _logger.LogWarning("No reservations found for book {BookId} when cancelling for order {OrderId}", bookId, orderId);
+                        logger.LogWarning("No reservations found for book {BookId} when cancelling for order {OrderId}", bookId, orderId);
                         return false;
                     }
 
                     var orderReservation = reservations.FirstOrDefault(r => r.OrderId == orderId);
                     if (orderReservation == default)
                     {
-                        _logger.LogWarning("No reservation found for order {OrderId} for book {BookId}", orderId, bookId);
+                        logger.LogWarning("No reservation found for order {OrderId} for book {BookId}", orderId, bookId);
                         return false;
                     }
 
@@ -210,7 +191,7 @@ namespace OnlineBookstore.CatalogService.Services
                         _stockReservations.Remove(bookId);
                     }
                     
-                    _logger.LogInformation("Cancelled reservation for book {BookId} for order {OrderId}", bookId, orderId);
+                    logger.LogInformation("Cancelled reservation for book {BookId} for order {OrderId}", bookId, orderId);
                     
                     return true;
                 }
@@ -221,7 +202,7 @@ namespace OnlineBookstore.CatalogService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error cancelling reservation for book {BookId} for order {OrderId}", bookId, orderId);
+                logger.LogError(ex, "Error cancelling reservation for book {BookId} for order {OrderId}", bookId, orderId);
                 throw;
             }
         }

@@ -5,7 +5,7 @@ using OnlineBookstore.CatalogService.Models;
 
 namespace OnlineBookstore.CatalogService.Services
 {
-    public class ElasticsearchService(ElasticsearchClient client)
+    public sealed class ElasticsearchService(ElasticsearchClient client)
     {
         private const string BookIndexName = "books";
 
