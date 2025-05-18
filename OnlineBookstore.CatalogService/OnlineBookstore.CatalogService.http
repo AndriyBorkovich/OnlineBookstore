@@ -1,6 +1,0 @@
-@OnlineBookstore.CatalogService_HostAddress = http://localhost:5167
-
-GET {{OnlineBookstore.CatalogService_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

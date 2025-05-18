@@ -1,23 +1,12 @@
 using System.Net;
-using System.Net.Http.Json;
-using Microsoft.Extensions.Logging;
 using OnlineBookstore.OrderService.Models;
 
 namespace OnlineBookstore.OrderService.Services
 {
-    public class CatalogServiceClient
+    public class CatalogServiceClient(
+        HttpClient httpClient,
+        ILogger<CatalogServiceClient> logger)
     {
-        private readonly HttpClient _httpClient;
-        private readonly ILogger<CatalogServiceClient> _logger;
-
-        public CatalogServiceClient(
-            HttpClient httpClient,
-            ILogger<CatalogServiceClient> logger)
-        {
-            _httpClient = httpClient;
-            _logger = logger;
-        }
-
         public record BookStockInfo(Guid Id, string Title, int Stock);
         
         public record StockValidationRequest(Guid BookId, int Quantity);
@@ -32,16 +21,16 @@ namespace OnlineBookstore.OrderService.Services
         {
             try
             {
-                return await _httpClient.GetFromJsonAsync<BookStockInfo>($"/api/books/{bookId}/stock", cancellationToken);
+                return await httpClient.GetFromJsonAsync<BookStockInfo>($"/api/books/{bookId}/stock", cancellationToken);
             }
             catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
             {
-                _logger.LogWarning("Book with ID {BookId} not found", bookId);
+                logger.LogWarning("Book with ID {BookId} not found", bookId);
                 return null;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error getting book stock info for {BookId}", bookId);
+                logger.LogError(ex, "Error getting book stock info for {BookId}", bookId);
                 throw;
             }
         }
@@ -50,7 +39,7 @@ namespace OnlineBookstore.OrderService.Services
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("/api/books/validate-stock", request, cancellationToken);
+                var response = await httpClient.PostAsJsonAsync("/api/books/validate-stock", request, cancellationToken);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -58,12 +47,12 @@ namespace OnlineBookstore.OrderService.Services
                            ?? new StockValidationResponse(false, 0);
                 }
                 
-                _logger.LogWarning("Stock validation failed with status code {StatusCode}", response.StatusCode);
+                logger.LogWarning("Stock validation failed with status code {StatusCode}", response.StatusCode);
                 return new StockValidationResponse(false, 0);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error validating stock for book {BookId}", request.BookId);
+                logger.LogError(ex, "Error validating stock for book {BookId}", request.BookId);
                 throw;
             }
         }
@@ -72,7 +61,7 @@ namespace OnlineBookstore.OrderService.Services
         {
             try
             {
-                var response = await _httpClient.PostAsJsonAsync("/api/books/reserve-stock", request, cancellationToken);
+                var response = await httpClient.PostAsJsonAsync("/api/books/reserve-stock", request, cancellationToken);
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -80,12 +69,12 @@ namespace OnlineBookstore.OrderService.Services
                            ?? new StockReservationResponse(false, "Unknown error occurred");
                 }
                 
-                _logger.LogWarning("Stock reservation failed with status code {StatusCode}", response.StatusCode);
+                logger.LogWarning("Stock reservation failed with status code {StatusCode}", response.StatusCode);
                 return new StockReservationResponse(false, $"Failed with status code: {response.StatusCode}");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reserving stock for book {BookId}", request.BookId);
+                logger.LogError(ex, "Error reserving stock for book {BookId}", request.BookId);
                 throw;
             }
         }
@@ -101,7 +90,7 @@ namespace OnlineBookstore.OrderService.Services
                     
                     if (!validationResult.IsAvailable)
                     {
-                        _logger.LogWarning("Insufficient stock for book {BookId}. Requested: {Quantity}, Available: {CurrentStock}", 
+                        logger.LogWarning("Insufficient stock for book {BookId}. Requested: {Quantity}, Available: {CurrentStock}", 
                             item.BookId, item.Quantity, validationResult.CurrentStock);
                         return false;
                     }
@@ -111,7 +100,7 @@ namespace OnlineBookstore.OrderService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error validating order items stock");
+                logger.LogError(ex, "Error validating order items stock");
                 return false;
             }
         }
@@ -127,7 +116,7 @@ namespace OnlineBookstore.OrderService.Services
                     
                     if (!reservationResult.Success)
                     {
-                        _logger.LogWarning("Failed to reserve stock for book {BookId}. Reason: {Message}", 
+                        logger.LogWarning("Failed to reserve stock for book {BookId}. Reason: {Message}", 
                             item.BookId, reservationResult.Message);
                         return false;
                     }
@@ -137,7 +126,7 @@ namespace OnlineBookstore.OrderService.Services
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error reserving order items stock for order {OrderId}", orderId);
+                logger.LogError(ex, "Error reserving order items stock for order {OrderId}", orderId);
                 return false;
             }
         }

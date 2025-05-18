@@ -1,5 +1,6 @@
 using OnlineBookstore.ReviewService.Models;
 using OnlineBookstore.ReviewService.Services;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,13 @@ app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference(opt =>
+    {
+        opt.Title = "Review API";
+        opt.Theme = ScalarTheme.DeepSpace;
+        opt.DefaultHttpClient = new(ScalarTarget.Http, ScalarClient.Http11);
+        opt.OperationSorter = OperationSorter.Alpha;
+    });
 }
 
 app.UseHttpsRedirection();

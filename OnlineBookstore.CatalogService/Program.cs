@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OnlineBookstore.CatalogService.Data;
 using OnlineBookstore.CatalogService.Models;
 using OnlineBookstore.CatalogService.Services;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +33,14 @@ app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    
+    app.MapScalarApiReference(opt =>
+    {
+        opt.Title = "Catalog API";
+        opt.Theme = ScalarTheme.Moon;
+        opt.DefaultHttpClient = new(ScalarTarget.Http, ScalarClient.Http11);
+        opt.OperationSorter = OperationSorter.Alpha;
+    });
+
     // Apply migrations in development
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
@@ -46,8 +54,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Define API groups
-var booksApi = app.MapGroup("/api/books");
-var categoriesApi = app.MapGroup("/api/categories");
+var booksApi = app.MapGroup("/api/books").WithOpenApi(); // Make group visible to OpenAPI
+var categoriesApi = app.MapGroup("/api/categories").WithOpenApi(); // Make group visible to OpenAPI
 
 // Books endpoints
 booksApi.MapGet("/", async (CatalogDbContext db, BookCacheService cacheService) => 

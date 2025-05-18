@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using OnlineBookstore.OrderService.Data;
 using OnlineBookstore.OrderService.Models;
 using OnlineBookstore.OrderService.Services;
+using Scalar.AspNetCore;
 using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -55,7 +56,14 @@ app.MapDefaultEndpoints();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    
+    app.MapScalarApiReference(opt =>
+    {
+        opt.Title = "Order API";
+        opt.Theme = ScalarTheme.Kepler;
+        opt.DefaultHttpClient = new(ScalarTarget.Http, ScalarClient.Http11);
+        opt.OperationSorter = OperationSorter.Alpha;
+    });
+
     // Apply migrations in development
     using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
@@ -196,23 +204,16 @@ ordersApi.MapPut("/{id:guid}", async (Guid id, Order order, OrderDbContext db) =
     {
         return Results.BadRequest();
     }
+    if (!await db.Orders.AnyAsync(o => o.Id == id))
+    {
+        return Results.NotFound();
+    }
 
     db.Entry(order).State = EntityState.Modified;
+    
+    await db.SaveChangesAsync();
 
-    try
-    {
-        await db.SaveChangesAsync();
-    }
-    catch (DbUpdateConcurrencyException)
-    {
-        if (!await db.Orders.AnyAsync(o => o.Id == id))
-        {
-            return Results.NotFound();
-        }
-        throw;
-    }
-
-    return Results.NoContent();
+    return Results.Ok("edited");
 });
 
 ordersApi.MapPut("/{id:guid}/status", async (Guid id, string status, OrderDbContext db, CatalogServiceClient catalogClient, ILogger<Program> logger) =>
