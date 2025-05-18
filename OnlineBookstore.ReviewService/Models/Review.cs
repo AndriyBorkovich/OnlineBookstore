@@ -3,7 +3,7 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace OnlineBookstore.ReviewService.Models
 {
-    public class Review
+    public sealed class Review
     {
         [BsonId]
         public ObjectId Id { get; set; }

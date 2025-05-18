@@ -1,20 +1,26 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
-// Infrastructure resources
 var postgresql = builder.AddPostgres("postgres")
-    .WithDataVolumeMount("postgres-data");
+    .WithPgAdmin()
+    .WithDataVolume("postgres-data")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 var catalogDb = postgresql.AddDatabase("catalogdb");
 var orderDb = postgresql.AddDatabase("orderdb");
 
 var mongodb = builder.AddMongoDB("mongodb")
-    .WithDataVolumeMount("mongo-data");
+    .WithDataVolume("mongo-data")
+    .WithLifetime(ContainerLifetime.Persistent);
+
+var reviewDb = mongodb.AddDatabase("reviewdb");
 
 var redis = builder.AddRedis("redis")
-    .WithDataVolumeMount("redis-data");
+    .WithDataVolume("redis-data")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 var elasticsearch = builder.AddElasticsearch("elasticsearch")
-    .WithDataVolumeMount("elastic-data");
+    .WithDataVolume("elastic-data")
+    .WithLifetime(ContainerLifetime.Persistent);
 
 // Microservices
 var catalogService = builder.AddProject<Projects.OnlineBookstore_CatalogService>("catalogservice")

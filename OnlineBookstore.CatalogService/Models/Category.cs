@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OnlineBookstore.CatalogService.Models;
 
-public class Category
+public sealed class Category
 {
     [Key]
     public Guid Id { get; set; }

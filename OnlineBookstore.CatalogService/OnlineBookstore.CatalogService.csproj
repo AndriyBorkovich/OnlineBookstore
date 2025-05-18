@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Elastic.Clients.Elasticsearch" Version="9.2.1-preview.1.25222.1" />
     <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.2.1" />
     <PackageReference Include="Aspire.StackExchange.Redis.DistributedCaching" Version="9.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
