@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OnlineBookstore.CatalogService\OnlineBookstore.CatalogService.csproj" />
-    <ProjectReference Include="..\OnlineBookStore.OrderService\OnlineBookStore.OrderService.csproj" />
+    <ProjectReference Include="..\OnlineBookStore.OrderService\OnlineBookstore.OrderService.csproj" />
     <ProjectReference Include="..\OnlineBookstore.ServiceDefaults\OnlineBookstore.ServiceDefaults.csproj" />
   </ItemGroup>
 </Project>

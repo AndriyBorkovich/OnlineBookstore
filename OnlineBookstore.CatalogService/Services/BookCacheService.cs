@@ -24,7 +24,6 @@ namespace OnlineBookstore.CatalogService.Services
 
         private string GetBookKey(Guid id) => $"book:{id}";
         private string GetPopularBooksKey() => "popular_books";
-        private string GetCategoryBooksKey(Guid categoryId) => $"category:{categoryId}:books";
 
         public async Task CacheBookAsync(Book book)
         {

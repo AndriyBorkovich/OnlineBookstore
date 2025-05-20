@@ -41,7 +41,7 @@ var catalogService = builder.AddProject<Projects.OnlineBookstore_CatalogService>
     .WaitFor(elasticsearch)
     .WithExternalHttpEndpoints();
 
-var orderService = builder.AddProject<Projects.OnlineBookStore_OrderService>("order-service")
+var orderService = builder.AddProject<Projects.OnlineBookstore_OrderService>("order-service")
     .WithReference(orderDb)
     .WaitFor(orderDb)
     .WithExternalHttpEndpoints();

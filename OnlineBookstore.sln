@@ -9,13 +9,21 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineBookstore.ServiceDefa
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineBookstore.Web", "OnlineBookstore.Web\OnlineBookstore.Web.csproj", "{1573FB5E-77B5-91C0-758F-3C36D3FA3D12}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineBookStore.OrderService", "OnlineBookStore.OrderService\OnlineBookStore.OrderService.csproj", "{BF4E0C1C-4283-C842-334F-589E47A8FF9F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineBookstore.OrderService", "OnlineBookStore.OrderService\OnlineBookstore.OrderService.csproj", "{BF4E0C1C-4283-C842-334F-589E47A8FF9F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineBookstore.CatalogService", "OnlineBookstore.CatalogService\OnlineBookstore.CatalogService.csproj", "{B120F84B-E707-2552-0404-7A09B6BCC58D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineBookstore.ReviewService", "OnlineBookstore.ReviewService\OnlineBookstore.ReviewService.csproj", "{EC1E3CE1-6712-9BD0-4188-164305424A8D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineBookstore.MigrationsService", "OnlineBookstore.MigrationsService\OnlineBookstore.MigrationsService.csproj", "{0FB21AA6-13DD-42CD-9B82-0E0D497F552B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{984BB9B3-3FA3-BE33-9484-CAC21695A33C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "aspire", "aspire", "{52BF7FB6-37FF-5100-EFD1-124EFF302675}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,6 +62,17 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{49AB7175-5E95-4CCB-8632-E40A1458540A} = {52BF7FB6-37FF-5100-EFD1-124EFF302675}
+		{65093115-86F9-8924-4713-337FA5DF9976} = {52BF7FB6-37FF-5100-EFD1-124EFF302675}
+		{1573FB5E-77B5-91C0-758F-3C36D3FA3D12} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{BF4E0C1C-4283-C842-334F-589E47A8FF9F} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
+		{B120F84B-E707-2552-0404-7A09B6BCC58D} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
+		{EC1E3CE1-6712-9BD0-4188-164305424A8D} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
+		{0FB21AA6-13DD-42CD-9B82-0E0D497F552B} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
+		{984BB9B3-3FA3-BE33-9484-CAC21695A33C} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{52BF7FB6-37FF-5100-EFD1-124EFF302675} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {91D6167C-BDCB-45D1-A4FC-595382656363}
