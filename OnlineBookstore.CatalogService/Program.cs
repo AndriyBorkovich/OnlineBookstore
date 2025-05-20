@@ -40,11 +40,6 @@ if (app.Environment.IsDevelopment())
         opt.DefaultHttpClient = new(ScalarTarget.Http, ScalarClient.Http11);
         opt.OperationSorter = OperationSorter.Alpha;
     });
-
-    // Apply migrations in development
-    using var scope = app.Services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<CatalogDbContext>();
-    dbContext.Database.Migrate();
     
     // Initialize Elasticsearch index
     var esService = scope.ServiceProvider.GetRequiredService<ElasticsearchService>();

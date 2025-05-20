@@ -6,13 +6,13 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <IsAspireHost>true</IsAspireHost>
     <UserSecretsId>ff232708-ef2d-471d-ae60-0a635c6db935</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\OnlineBookstore.CatalogService\OnlineBookstore.CatalogService.csproj" />
+    <ProjectReference Include="..\OnlineBookstore.MigrationsService\OnlineBookstore.MigrationsService.csproj" />
     <ProjectReference Include="..\OnlineBookStore.OrderService\OnlineBookStore.OrderService.csproj" />
     <ProjectReference Include="..\OnlineBookstore.ReviewService\OnlineBookstore.ReviewService.csproj" />
     <ProjectReference Include="..\OnlineBookstore.Web\OnlineBookstore.Web.csproj" />

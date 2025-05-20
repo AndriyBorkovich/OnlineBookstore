@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineBookstore.CatalogServ
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineBookstore.ReviewService", "OnlineBookstore.ReviewService\OnlineBookstore.ReviewService.csproj", "{EC1E3CE1-6712-9BD0-4188-164305424A8D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OnlineBookstore.MigrationsService", "OnlineBookstore.MigrationsService\OnlineBookstore.MigrationsService.csproj", "{0FB21AA6-13DD-42CD-9B82-0E0D497F552B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{EC1E3CE1-6712-9BD0-4188-164305424A8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EC1E3CE1-6712-9BD0-4188-164305424A8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EC1E3CE1-6712-9BD0-4188-164305424A8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FB21AA6-13DD-42CD-9B82-0E0D497F552B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FB21AA6-13DD-42CD-9B82-0E0D497F552B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FB21AA6-13DD-42CD-9B82-0E0D497F552B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FB21AA6-13DD-42CD-9B82-0E0D497F552B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

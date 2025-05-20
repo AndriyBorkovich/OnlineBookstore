@@ -38,7 +38,7 @@ httpClientBuilder.AddStandardResilienceHandler(options =>
             HttpStatusCode.TooManyRequests or 
             HttpStatusCode.InternalServerError);
     
-    // Configure circuit breaker
+    // Configure circuit breaker 
     options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(30);
     options.CircuitBreaker.FailureRatio = 0.5;
     options.CircuitBreaker.MinimumThroughput = 10;
@@ -63,11 +63,6 @@ if (app.Environment.IsDevelopment())
         opt.DefaultHttpClient = new(ScalarTarget.Http, ScalarClient.Http11);
         opt.OperationSorter = OperationSorter.Alpha;
     });
-
-    // Apply migrations in development
-    using var scope = app.Services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<OrderDbContext>();
-    dbContext.Database.Migrate();
 }
 
 app.UseHttpsRedirection();
@@ -90,7 +85,8 @@ customersApi.MapGet("/{id:guid}/orders", async (Guid id, OrderDbContext db) =>
     await db.Orders
         .Include(o => o.Items)
         .Where(o => o.CustomerId == id)
-        .ToListAsync());
+        .ToListAsync())
+    .WithDescription("Get customer orders");
 
 customersApi.MapPost("/", async (Customer customer, OrderDbContext db) =>
 {
@@ -99,27 +95,19 @@ customersApi.MapPost("/", async (Customer customer, OrderDbContext db) =>
     return Results.Created($"/api/customers/{customer.Id}", customer);
 });
 
-customersApi.MapPut("/{id:guid}", async (Guid id, Customer customer, OrderDbContext db) =>
+customersApi.MapPut("/{id:guid}",  async (Guid id, Customer customer, OrderDbContext db) =>
 {
     if (id != customer.Id)
     {
         return Results.BadRequest();
     }
 
-    db.Entry(customer).State = EntityState.Modified;
+    if (!await db.Customers.AnyAsync(c => c.Id == id))
+    {
+        return Results.NotFound();
+    }
 
-    try
-    {
-        await db.SaveChangesAsync();
-    }
-    catch (DbUpdateConcurrencyException)
-    {
-        if (!await db.Customers.AnyAsync(c => c.Id == id))
-        {
-            return Results.NotFound();
-        }
-        throw;
-    }
+    await db.SaveChangesAsync();
 
     return Results.NoContent();
 });
@@ -196,7 +184,8 @@ ordersApi.MapPost("/", async (Order order, OrderDbContext db, CatalogServiceClie
         logger.LogError(ex, "Error creating order");
         return Results.StatusCode(500);
     }
-});
+})
+.WithDescription("Create order");
 
 ordersApi.MapPut("/{id:guid}", async (Guid id, Order order, OrderDbContext db) =>
 {

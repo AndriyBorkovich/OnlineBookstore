@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-OnlineBookstore.MigrationsService-d2a685b9-368b-4a1f-97c3-58c6911220c5</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.5" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OnlineBookstore.CatalogService\OnlineBookstore.CatalogService.csproj" />
+    <ProjectReference Include="..\OnlineBookStore.OrderService\OnlineBookStore.OrderService.csproj" />
+    <ProjectReference Include="..\OnlineBookstore.ServiceDefaults\OnlineBookstore.ServiceDefaults.csproj" />
+  </ItemGroup>
+</Project>
