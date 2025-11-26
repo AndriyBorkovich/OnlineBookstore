@@ -52,8 +52,8 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 // Define API groups
-var booksApi = app.MapGroup("/api/books").WithOpenApi(); // Make group visible to OpenAPI
-var categoriesApi = app.MapGroup("/api/categories").WithOpenApi(); // Make group visible to OpenAPI
+var booksApi = app.MapGroup("/api/books").WithOpenApi();
+var categoriesApi = app.MapGroup("/api/categories").WithOpenApi();
 
 // Books endpoints
 booksApi.MapGet("/", async (CatalogDbContext db, BookCacheService cacheService) => 

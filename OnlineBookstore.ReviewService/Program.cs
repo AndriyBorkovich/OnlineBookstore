@@ -30,7 +30,7 @@ if (app.Environment.IsDevelopment())
     {
         opt.Title = "Review API";
         opt.Theme = ScalarTheme.DeepSpace;
-        opt.DefaultHttpClient = new(ScalarTarget.Http, ScalarClient.Http11);
+        opt.DefaultHttpClient = new(ScalarTarget.Shell, ScalarClient.Http1);
         opt.OperationSorter = OperationSorter.Alpha;
     });
 }
